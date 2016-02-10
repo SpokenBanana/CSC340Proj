@@ -63,7 +63,7 @@ public class Concordance {
         }
     }
 
-    public HashMap<String, LineData> create(String keyword) {
+    public HashMap<String, LineData> create(Scanner file, String keyword) {
         HashMap<String, LineData> concordance = new HashMap<>();
         //TODO transfer your main method code to here. Adjust as necessary.
         return concordance;
