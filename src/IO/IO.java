@@ -5,6 +5,8 @@ package IO;
  */
 
 //importing potential java stuffs
+import Concordance.Concordance;
+
 import java.util.*;
 import java.io.*;
 
@@ -17,7 +19,7 @@ public class IO {
     public ArrayList<String> get_book_list(String title) {
         //create a file to read from
         //creates a file to search through
-        File Bookfile = new File("Texts");
+        File Bookfile = new File("src/Texts");
         //creates an array of files to search through
         File[] filelist = Bookfile.listFiles();
         //creates an array list tostore the list of books in
@@ -28,7 +30,8 @@ public class IO {
         for (int i = 0; i < filelist.length; i++) {
             //if the file is a txt file
             if (filelist[i].toString().contains(".txt")) {
-                //add it to the array
+                //TODO check if title in in the filename;
+                //ad it to the array
                 ListofBooks.add(filelist[i].toString());
             }
 
@@ -52,6 +55,7 @@ public class IO {
         File[] filelist = Concordancesfile.listFiles();
         //puts each of the filelist concordances into the ArrayList
         for (int i = 0; i < filelist.length; i++) {
+            //TODO: check if keyword is in the filename
             ListofConcordances.add(filelist[i].toString());
         }
         //return ListofConcordances;
@@ -62,9 +66,22 @@ public class IO {
     */
     public Scanner read_file(String filename) {
         //create scanner
-        Scanner newscan = new Scanner(filename);
+        File f = new File(filename);
+        Scanner newscan;
+        try {
+            newscan = new Scanner(f);
+        }
+        catch (IOException e ) {
+            return null;
+        }
         //return
         return newscan;
+    }
+
+    public void save_concordance(HashMap<String, Concordance.LineData> data) {
+        // save the data in "data" to a file
+        // or Serialize.
+        // into src/Concordances.
     }
 
 }
