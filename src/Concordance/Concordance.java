@@ -18,6 +18,31 @@ public class Concordance {
         }
     }
 
+    public HashMap<String, LineData> create(Scanner file) {
+        HashMap<String, LineData> concordance = new HashMap<>();
+        int lineNum = 0;
+        while(file.hasNextLine()) {
+            Scanner line = new Scanner(file.nextLine());
+            while (line.hasNext()) {
+                String word = line.next().replaceAll("([a-z]+)[?.,;:!]*", "$1").toLowerCase();
+                if (concordance.containsKey(word)) {
+                    LineData data = concordance.get(word);
+                    data.count++;
+                    data.lineIn.add(lineNum);
+                    concordance.put(word, data);
+                }
+                else {
+                    LineData data = new LineData();
+                    data.count = 1;
+                    data.lineIn.add(lineNum);
+                    concordance.put(word, data);
+                }
+            }
+        }
+
+        return concordance;
+    }
+
     public HashMap<String, LineData> create(Scanner file, String keyword) {
         HashMap<String, LineData> concordance = new HashMap<>();
         try {
