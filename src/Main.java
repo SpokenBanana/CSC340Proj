@@ -21,13 +21,13 @@ public class Main {
 			String s = "";
 			for (int i = 1;  i < commands.length; i++)
 				s += commands[i];
-			System.out.println(io.search_concordnace(s).toString());
+			System.out.println(io.get_concordance_list().toString());
 		}
 		else if (commands[0].equals("-searchbook")) {
             String s = "";
 			for (int i = 1;  i < commands.length; i++)
 				s += commands[i];
-			System.out.println(io.get_book_list(s).size());
+			System.out.println(io.get_book_list().size());
 		}
 	}
 }
