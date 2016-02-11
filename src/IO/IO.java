@@ -74,7 +74,7 @@ public class IO {
                     ListofBooks.add(filelist[i].toString());
                 }
 
-                //ad it to the array
+               
             }
 
         }
@@ -112,13 +112,13 @@ public class IO {
             if (filelist[i].toString().contains(".txt")) {
                 //if the title contains the wanted keywords
                 if (filelist[i].toString().toLowerCase().contains(title.toLowerCase())) {
-                    //add it
+                    //increment count and set location as i
                     count++;
                     location = i;
 
                 }
 
-                //ad it to the array
+                
             }
 
         }
@@ -218,7 +218,7 @@ public class IO {
     }
 
     /**
-     * This method will create a scanner for the wanted text
+     * This method will create a scanner for a file passed through a string
      *
      * @param filename
      * @return
@@ -229,6 +229,24 @@ public class IO {
         Scanner newscan;
         try {
             newscan = new Scanner(f);
+        } catch (IOException e) {
+            return null;
+        }
+        //return
+        return newscan;
+    }
+    /**
+     * This method, when passed a file object, will create a scanner for that
+     * object. 
+     * @param filename
+     * @return 
+     */
+    public Scanner scan_file(File filename) {
+        //create scanner
+        
+        Scanner newscan;
+        try {
+            newscan = new Scanner(filename);
         } catch (IOException e) {
             return null;
         }
