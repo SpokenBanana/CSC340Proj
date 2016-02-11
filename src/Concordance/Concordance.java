@@ -3,37 +3,53 @@ package Concordance;
 import java.io.FileReader;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.ArrayList;
 
 public class Concordance {
 
-    public static void main(String[] args) {
+    public class LineData {
+
+        int count;
+        String word;
+        ArrayList<Integer> lineIn;
+
+        public LineData() {
+            lineIn = new ArrayList<>();
+        }
+    }
+
+    public HashMap<String, LineData> create(Scanner file, String keyword) {
+        HashMap<String, LineData> concordance = new HashMap<>();
         try {
-            String str;
             HashMap Concordance = new HashMap();
-            Scanner s = new Scanner(new FileReader("Alice\'s Adventures in Wonderland.txt"));
-            Scanner in = new Scanner(System.in);
-            System.out.println("Enter a word to search for.");
-            str = in.nextLine();
             int linenum = 1;
-            int numwordfound = 0;
-            while (s.hasNextLine()) {
-                String str3 = s.nextLine();
+            while (file.hasNextLine()) {
+                int numwordfound = 0;
+                String str3 = file.nextLine();
                 if (!str3.equals("")) {
                     Scanner ss = new Scanner(str3);
-                    String str2 = ss.next();
+                    String str2 = ss.next().replaceAll("([a-z]+)[?.,;:!]*", "$1");
                     System.out.println(str2);
-                    if (str.equals(str2)) {
+                    if (keyword.toLowerCase().equals(str2.toLowerCase())) {
                         numwordfound++;
-                        Concordance.put(linenum, numwordfound);
+                        if (Concordance.containsKey(linenum)) {
+                            Object d = Concordance.get(linenum);
+                            Concordance.put(linenum, d);
+                        } else {
+                            Concordance.put(linenum, numwordfound);
+                        }
+
                     }
                 }
 
                 linenum++;
                 System.out.println(linenum + " " + numwordfound);
             }
+            
 
         } catch (Exception e) {
             System.out.println("not found");
         }
+        return concordance;
     }
 }
