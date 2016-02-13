@@ -203,15 +203,15 @@ public class IO {
      */
     public ArrayList<String> get_concordance_list() {
         //creates the concordances file
-        File Concordancesfile = new File("Concordances");
+        File Concordancesfile = new File("src/Concordances");
         //creates arraylist
         ArrayList<String> ListofConcordances = new java.util.ArrayList<>();
         //creates filelist to write to arraylist
         File[] filelist = Concordancesfile.listFiles();
         //puts each of the filelist concordances into the ArrayList
         for (int i = 0; i < filelist.length; i++) {
-
-            ListofConcordances.add(filelist[i].toString());
+            if (filelist[i].toString().endsWith(".ser"))
+                ListofConcordances.add(filelist[i].getName());
         }
         //return ListofConcordances;
         return ListofConcordances;
@@ -259,6 +259,19 @@ public class IO {
         // or Serialize.
         // into src/Concordances.
 
+    }
+
+    public void save(Concordance concordance) {
+        try {
+
+            FileOutputStream fout = new FileOutputStream("src/Concordances/"+concordance.bookTitle +".ser");
+            ObjectOutputStream writer = new ObjectOutputStream(fout);
+            writer.writeObject(concordance);
+            writer.close();
+
+        } catch (Exception e) {
+            System.out.println("could not write to file, try agian.");
+        }
     }
 
 }

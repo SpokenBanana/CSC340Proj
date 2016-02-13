@@ -1,20 +1,29 @@
 package Concordance;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.ArrayList;
 
-public class Concordance {
+public class Concordance implements Serializable {
+    public String bookTitle;
+    public HashMap<String, LineData> concordanceData;
 
-    public class LineData {
+    public class LineData implements Serializable {
 
-        int count;
-        String word;
-        ArrayList<Integer> lineIn;
+        public int count;
+        public String word;
+        public ArrayList<Integer> lineIn;
 
         public LineData() {
             lineIn = new ArrayList<>();
+        }
+        public int getCount() {
+            return count;
+        }
+        public ArrayList<Integer> getLines() {
+            return lineIn;
         }
     }
 
@@ -22,9 +31,9 @@ public class Concordance {
         HashMap<String, LineData> concordance = new HashMap<>();
         int lineNum = 0;
         while(file.hasNextLine()) {
-            Scanner line = new Scanner(file.nextLine());
-            while (line.hasNext()) {
-                String word = line.next().replaceAll("([a-z]+)[?.,;:!]*", "$1").toLowerCase();
+            String[] words = file.nextLine().split(" ");
+            for(String word : words) {
+                word = word.replaceAll("[^a-zA-Z ]", "").toLowerCase().trim();
                 if (concordance.containsKey(word)) {
                     LineData data = concordance.get(word);
                     data.count++;
@@ -38,7 +47,9 @@ public class Concordance {
                     concordance.put(word, data);
                 }
             }
+            lineNum++;
         }
+        concordanceData = concordance;
 
         return concordance;
     }
@@ -81,6 +92,18 @@ public class Concordance {
             }   catch (Exception e) {
             System.out.println("not found");
         }
+        concordanceData = concordance;
         return concordance;
+    }
+
+    @Override
+    public String toString() {
+        String result = "- " + bookTitle + "\n";
+        if (concordanceData != null) {
+            for (String key : concordanceData.keySet()) {
+                result += String.format("%s | %d\n", key, concordanceData.get(key).count);
+            }
+        }
+        return result;
     }
 }
