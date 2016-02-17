@@ -7,6 +7,11 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
+    /*
+        Notes:
+        start of actual book after:
+        *** START OF THIS PROJECT GUTENBERG EBOOK TOM SAWYER ***
+     */
 	public static void main(String[] args) {
 		Scanner scanner = new Scanner(System.in);
 

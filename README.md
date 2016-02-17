@@ -1,2 +1,4 @@
 # CSC340Proj
-Project
+
+Team D's submission
+
