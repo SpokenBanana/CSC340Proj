@@ -57,7 +57,7 @@ public class IO {
     public ArrayList<String> search_book_list(String title) {
         //create a file to read from
         //creates a file to search through
-        File Bookfile = new File("src/Texts");
+        File Bookfile = new File("CSC340Proj-master/src/Texts");
         //creates an array of files to search through
         File[] filelist = Bookfile.listFiles();
         //creates an array list tostore the list of books in
@@ -98,7 +98,7 @@ public class IO {
     public File get_book(String title) {
         //create a file to read from
         //creates a file to search through
-        File Bookfile = new File("src/Texts");
+        File Bookfile = new File("CSC340Proj-master/src/Texts");
         //creates an array of files to search through
         File[] filelist = Bookfile.listFiles();
 
@@ -141,7 +141,7 @@ public class IO {
      */
     public ArrayList<String> search_concordance_list(String keywords) {
         //creates the concordances file
-        File Concordancesfile = new File("Concordances");
+        File Concordancesfile = new File("CSC340Proj-master/src/Concordances");
         //creates arraylist
         ArrayList<String> ListofConcordances = new java.util.ArrayList<>();
         //creates filelist to write to arraylist
@@ -264,7 +264,7 @@ public class IO {
     public void save(Concordance concordance) {
         try {
 
-            FileOutputStream fout = new FileOutputStream("src/Concordances/"+concordance.bookTitle +".ser");
+            FileOutputStream fout = new FileOutputStream("CSC340Proj-master/src/Concordances/"+concordance.bookTitle +".ser");
             ObjectOutputStream writer = new ObjectOutputStream(fout);
             writer.writeObject(concordance);
             writer.close();

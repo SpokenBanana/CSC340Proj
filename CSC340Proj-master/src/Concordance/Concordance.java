@@ -5,7 +5,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
-import java.util.ArrayList;
 
 public class Concordance implements Serializable {
     public String bookTitle;
@@ -31,7 +30,16 @@ public class Concordance implements Serializable {
     public HashMap<String, LineData> create(Scanner file) {
         HashMap<String, LineData> concordance = new HashMap<>();
         int lineNum = 0;
+        boolean pastPreambles = false;
         while(file.hasNextLine()) {
+            if (!pastPreambles) {
+                if (file.nextLine().startsWith("*** START")) {
+                    pastPreambles = true;
+                }
+                else{
+                    continue;
+                }
+            }
             String[] words = file.nextLine().split(" ");
             for(String word : words) {
                 word = word.replaceAll("[^a-zA-Z ]", "").toLowerCase().trim();
@@ -44,6 +52,7 @@ public class Concordance implements Serializable {
                 else {
                     LineData data = new LineData();
                     data.count = 1;
+                    data.word = word;
                     data.lineIn.add(lineNum);
                     concordance.put(word, data);
                 }
@@ -216,8 +225,73 @@ public class Concordance implements Serializable {
         
     }
     
-    
-    
-    
+
+    /*
+        Finds and returns a list of words within the distance in lines of the target word.
+     */
+    public ArrayList<String> wordsDistanceInLines(String target, int lineDistance) {
+        LineData targetData = concordanceData.get(target);
+        ArrayList<String> words = new ArrayList<>();
+
+        for (String key : concordanceData.keySet()) {
+            // skip the target word
+            if (key.equals(target)) continue;
+
+            LineData word = concordanceData.get(key);
+            // search through lines the target word is found
+            for (int i : targetData.lineIn) {
+                // search through lines the word is found
+                word.lineIn.forEach((Integer line) ->{
+                    if (!words.contains(word.word) && !word.word.equals(target) && line - lineDistance < i && i < line + lineDistance)
+                        words.add(word.word); // add words within the distance given.
+                });
+            }
+        }
+
+        return words;
+    }
+
+    /*
+        Finds and returns a list of words within the distance in words of the target word
+     */
+
+    public ArrayList<String> wordsDistanceInWords(String target, int wordDistance, Scanner file) {
+        LineData targetData = concordanceData.get(target);
+        ArrayList<String> words = new ArrayList<>();
+        CircleQueue<String> wordsBefore = new CircleQueue<String>(wordDistance);
+        int saving = 0;
+        while (file.hasNextLine()) {
+            String line = file.nextLine();
+            String[] lineWords = line.split(" ");
+            for (String word : lineWords) {
+                word = strip(word);
+                if (saving != 0){
+                    if (!words.contains(word))
+                        words.add(word);
+                    saving--;
+                }
+                if (word.equals(target)) {
+                    // start adding words to the words
+                    while (!wordsBefore.isEmpty()) {
+                        String toAdd = wordsBefore.pop();
+                        if (!words.contains(toAdd))
+                            words.add(toAdd);
+                    }
+                    saving = wordDistance;
+                }
+                else {
+                    if (!wordsBefore.contains(word))
+                        wordsBefore.add(word);
+                }
+            }
+        }
+
+        return words;
+    }
+
+    public String strip(String s) {
+        return s.toLowerCase().replaceAll("[^a-zA-Z ]", "").trim();
+    }
+
     
 }

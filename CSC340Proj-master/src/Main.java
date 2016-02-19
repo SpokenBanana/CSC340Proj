@@ -34,14 +34,16 @@ public class Main {
             switch (commands[0]) {
                 case "-h":
                     System.out.println("Here are the commands\n" +
-                            "-searchcon <concordance name> | checks if concordance exists\n" +
-                            "-serachbook <book name> | checks if book exists.\n" +
+                            "-getconcordance <concordance name> | checks if concordance exists\n" +
+                            "-getbook <book name> | checks if book exists.\n" +
                             "-createconcordnace <book file name> | creates and saves a concordance.\n" +
                             "-loadconcordance <concordance file name> | loads the concordance and allows you to perform queries on it.\n" +
                             "-books | returns a list of books.\n" +
-                            "-concordances | returns a list of saved concordances\n");
+                            "-concordances | returns a list of saved concordances.\n" +
+                            "-searchconcordance <keyword> | returns a list of concordances that contain the given keyword in the title.\n" +
+                            "-searchbook <keyword> | returns a list of books that contain the given keyword in the title.");
                     break;
-                case "-searchcon": {
+                case "-getconcordance": {
                     String s = "";
                     for (int i = 1; i < commands.length; i++)
                         s += commands[i];
@@ -54,7 +56,7 @@ public class Main {
                     }
                     break;
                 }
-                case "-searchbook": {
+                case "-getbook": {
                     String s = "";
                     for (int i = 1; i < commands.length; i++)
                         s += commands[i];
@@ -64,6 +66,26 @@ public class Main {
                     }
                     else {
                         System.out.println("Book does not exist");
+                    }
+                    break;
+                }
+                case "-searchconcordance": {
+                    ArrayList<String> result = io.search_concordance_list(commands[1]);
+                    System.out.println("Concordances: ");
+                    if (result.isEmpty())
+                        System.out.println("No concordance found.");
+                    else{
+                        result.forEach(System.out::println);
+                    }
+                    break;
+                }
+                case "-searchbook": {
+                    ArrayList<String> result = io.search_book_list(commands[1]);
+                    System.out.println("Books: ");
+                    if (result.isEmpty())
+                        System.out.println("No books found.");
+                    else{
+                        result.forEach(System.out::println);
                     }
                     break;
                 }
@@ -104,7 +126,7 @@ public class Main {
                         System.out.println("loading...");
 
                         // de-serialize
-                        FileInputStream fin = new FileInputStream("src/Concordances/" + name);
+                        FileInputStream fin = new FileInputStream("CSC340Proj-master/src/Concordances/" + name);
                         ObjectInputStream in = new ObjectInputStream(fin);
                         Concordance c = (Concordance) in.readObject();
 
@@ -120,7 +142,11 @@ public class Main {
                             switch (qs[0]) {
                                 case "-h":
                                     System.out.println("-count <word> | Returns the count of the word given.\n" +
-                                            "-lines <word> | Returns the line numbers the word appears in.");
+                                            "-lines <word> | Returns the line numbers the word appears in.\n" +
+                                            "wordsInDistanceLines <word> <distance> | Returns a list of words " +
+                                            "within <distance> lines of <word>, <distance> being an integer.\n" +
+                                            "wordsInDistanceWords <word> <distance> | Returns a list of words" +
+                                            "within <distance> words of <word>, <distance> being an integer.");
                                     break;
                                 case "-count": {
                                     Concordance.LineData data = c.concordanceData.get(qs[1]);
@@ -134,6 +160,40 @@ public class Main {
                                 case "-lines": {
                                     Concordance.LineData data = c.concordanceData.get(qs[1]);
                                     data.getLines().forEach(System.out::println);
+                                    break;
+                                }
+                                case "wordsInDistanceLines": {
+                                    if (qs.length < 2) {
+                                        System.out.println("The parameters of this command are <word1> <distance:integer>");
+                                        break;
+                                    }
+                                    int distance = 0;
+                                    try {
+                                        distance = Integer.parseInt(qs[2]);
+                                    } catch (Exception e) {
+                                        System.out.println("The last parameter but be an integer value");
+                                        break;
+                                    }
+                                    ArrayList<String> words = c.wordsDistanceInLines(qs[1], distance);
+                                    System.out.println(String.format("Words within %d distance of %s", distance, qs[1]));
+                                    words.forEach(System.out::println);
+                                    break;
+                                }
+                                case "wordsInDistanceWords": {
+                                    if (qs.length < 2) {
+                                        System.out.println("The parameters of this command are <word> <distance:integer>");
+                                        break;
+                                    }
+                                    int distance = 0;
+                                    try {
+                                        distance = Integer.parseInt(qs[2]);
+                                    } catch (Exception e) {
+                                        System.out.println("The last parameter must be an integer value.");
+                                    }
+                                    Scanner bookScanner = new Scanner(io.get_book(c.bookTitle));
+                                    ArrayList<String> words = c.wordsDistanceInWords(qs[1], distance, bookScanner);
+                                    System.out.println(String.format("Words within %d distance in words of %s:", distance, qs[1]));
+                                    words.forEach(System.out::println);
                                     break;
                                 }
                                 default:
