@@ -85,7 +85,7 @@ public class IO {
     }
 
     /**
-     * This method should return only file of the specific wanted book. It will
+     * This method should return only 1 file of the specific wanted book. It will
      * return null if there are 0 matches, or more than one match.
      *
      * @param title
