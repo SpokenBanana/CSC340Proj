@@ -7,6 +7,8 @@ package IO;
 //importing potential java stuffs
 import Concordance.Concordance;
 
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.io.*;
 
@@ -271,6 +273,15 @@ public class IO {
 
         } catch (Exception e) {
             System.out.println("could not write to file, try agian.");
+        }
+    }
+
+    public void saveNewBook(File file) {
+        File newFile = new File("CSC340Proj-master/src/Texts/" + file.getName());
+        try {
+            Files.copy(file.toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            System.out.println("Could not copy the file");
         }
     }
 

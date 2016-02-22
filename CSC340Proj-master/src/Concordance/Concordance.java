@@ -1,6 +1,7 @@
 package Concordance;
 
 
+import javax.sound.sampled.Line;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,19 +28,10 @@ public class Concordance implements Serializable {
         }
     }
 
-    public HashMap<String, LineData> create(Scanner file) {
+    public HashMap<String, LineData> createFromFile(Scanner file) {
         HashMap<String, LineData> concordance = new HashMap<>();
         int lineNum = 0;
-        boolean pastPreambles = false;
         while(file.hasNextLine()) {
-            if (!pastPreambles) {
-                if (file.nextLine().startsWith("*** START")) {
-                    pastPreambles = true;
-                }
-                else{
-                    continue;
-                }
-            }
             String[] words = file.nextLine().split(" ");
             for(String word : words) {
                 word = word.replaceAll("[^a-zA-Z ]", "").toLowerCase().trim();
@@ -60,8 +52,24 @@ public class Concordance implements Serializable {
             lineNum++;
         }
         concordanceData = concordance;
-
         return concordance;
+    }
+
+    public HashMap<String, LineData> create(Scanner file) {
+        boolean pastPreambles = false;
+        while(file.hasNextLine()) {
+            if (!pastPreambles) {
+                if (file.nextLine().startsWith("*** START")) {
+                    pastPreambles = true;
+                }
+            }
+            else {
+                createFromFile(file);
+                break;
+            }
+        }
+
+        return concordanceData;
     }
 
     public HashMap<String, LineData> create(Scanner file, String keyword) {
@@ -284,6 +292,12 @@ public class Concordance implements Serializable {
                         wordsBefore.add(word);
                 }
             }
+        }
+
+        while (!wordsBefore.isEmpty()) {
+            String toAdd = wordsBefore.pop();
+            if (!words.contains(toAdd))
+                words.add(toAdd);
         }
 
         return words;
