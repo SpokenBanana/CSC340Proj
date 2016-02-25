@@ -3,6 +3,7 @@ package Concordance;
 
 import javax.sound.sampled.Line;
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -298,6 +299,49 @@ public class Concordance implements Serializable {
             String toAdd = wordsBefore.pop();
             if (!words.contains(toAdd))
                 words.add(toAdd);
+        }
+
+        return words;
+    }
+
+    /**
+     * Finds the words around the phrase within the given distance in lines
+     * @param phrase the phrase to look for
+     * @param distance the distance in lines
+     * @param file the file the book coressponds to
+     * @return a list of unique words found within the range
+     */
+    public ArrayList<String> findPhraseInLines(String phrase, int distance, Scanner file) {
+        ArrayList<String> words = new ArrayList<>();
+        CircleQueue<String> lines = new CircleQueue<String>(distance);
+        CircleQueue<String> phr = new CircleQueue<String>(phrase.split(" ").length + 1);
+        int saving = 0;
+        while (file.hasNextLine()) {
+            String line = file.nextLine();
+            String[] parts = line.split(" ");
+            if (saving != 0) {
+                for (String word : parts)
+                    if (!words.contains(word) && !phr.contains(word))
+                        words.add(word);
+                saving--;
+            }
+            for (String part : parts) {
+                phr.add(part);
+                if (phr.isFull() && phr.asString().equalsIgnoreCase(phrase)) {
+                    // add words in lines, start adding words in the next <distance> lines.
+                    while (!lines.isEmpty()) {
+                        String[] lineParts = lines.pop().split(" ");
+                        for (String lineWord: lineParts)
+                            if (!words.contains(lineWord) && !phr.contains(lineWord))
+                                words.add(lineWord);
+                    }
+                    saving = distance;
+                }
+                if (saving != 0)
+                    if (!words.contains(part) && !phr.contains(part))
+                        words.add(part);
+            }
+            lines.add(line);
         }
 
         return words;

@@ -220,10 +220,33 @@ public class Main {
                                     distance = Integer.parseInt(qs[2]);
                                 } catch (Exception e) {
                                     System.out.println("The last parameter must be an integer value.");
+                                    break;
                                 }
                                 Scanner bookScanner = new Scanner(io.get_book(c.bookTitle));
                                 ArrayList<String> words = c.wordsDistanceInWords(qs[1], distance, bookScanner);
                                 System.out.println(String.format("Words within %d distance in words of %s:", distance, qs[1]));
+                                words.forEach(System.out::println);
+                                break;
+                            }
+                            case "phraseInDistanceLines": {
+                                if (qs.length < 2) {
+                                    System.out.println("the parameters of this command are <distance:integer> <phrase>");
+                                    break;
+                                }
+                                String phrase = "";
+                                for (int i = 2; i < qs.length; i++)
+                                    phrase += qs[i] + " ";
+                                phrase = phrase.substring(0, phrase.length() - 1);
+                                int distance = 0;
+                                try {
+                                    distance = Integer.parseInt(qs[1]);
+                                } catch (Exception e) {
+                                    System.out.println("The first parameter must be an integer.");
+                                    break;
+                                }
+                                Scanner bookScanner = new Scanner(io.get_book(c.bookTitle));
+                                ArrayList<String> words = c.findPhraseInLines(phrase, distance, bookScanner);
+                                System.out.println(String.format("Words within %d distance in lines of \"%s\"", distance, phrase));
                                 words.forEach(System.out::println);
                                 break;
                             }
