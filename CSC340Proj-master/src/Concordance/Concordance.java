@@ -313,20 +313,34 @@ public class Concordance implements Serializable {
      */
     public ArrayList<String> findPhraseInLines(String phrase, int distance, Scanner file) {
         ArrayList<String> words = new ArrayList<>();
+
+        // holds the last "distance" lines.
         CircleQueue<String> lines = new CircleQueue<String>(distance);
+
+        // holds the last phrase, we use the length + 1 to capture the last word.
         CircleQueue<String> phr = new CircleQueue<String>(phrase.split(" ").length + 1);
+
+        // lets us know if we need to save the current line, since we want lines in
+        // "distance" before and after the phrase.
         int saving = 0;
+
         while (file.hasNextLine()) {
             String line = file.nextLine();
             String[] parts = line.split(" ");
+
+            // do we need to save this line?
             if (saving != 0) {
+                // save all the words in this line
                 for (String word : parts)
                     if (!words.contains(word) && !phr.contains(word))
                         words.add(word);
                 saving--;
             }
+
             for (String part : parts) {
+                // add a new word to the phrase queue
                 phr.add(part);
+                // is it full? does what it currently have match the phrase?
                 if (phr.isFull() && phr.asString().equalsIgnoreCase(phrase)) {
                     // add words in lines, start adding words in the next <distance> lines.
                     while (!lines.isEmpty()) {
@@ -335,12 +349,15 @@ public class Concordance implements Serializable {
                             if (!words.contains(lineWord) && !phr.contains(lineWord))
                                 words.add(lineWord);
                     }
+                    // tells us to save the next "distance" lines too.
                     saving = distance;
                 }
+                // save the words in the current line also.
                 if (saving != 0)
                     if (!words.contains(part) && !phr.contains(part))
                         words.add(part);
             }
+            // add current line to the lines queue.
             lines.add(line);
         }
 
