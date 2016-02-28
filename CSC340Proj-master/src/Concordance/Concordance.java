@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Scanner;
 
 public class Concordance implements Serializable {
@@ -28,6 +29,24 @@ public class Concordance implements Serializable {
             return lineIn;
         }
     }
+
+    public LinkedList<Integer> getRank(int count){
+        LinkedList<Integer> RankbyAppearance = new LinkedList<>();
+        int i = 0;
+        if(RankbyAppearance.get(i) == null){
+            RankbyAppearance.add(count);
+        }
+        if (RankbyAppearance.get(i) != null ){
+            if(count > RankbyAppearance.get(i)){
+                RankbyAppearance.addFirst(count);
+            }
+            else{
+                RankbyAppearance.addLast(count);
+            }
+        }
+        return RankbyAppearance;
+    }
+
 
     public HashMap<String, LineData> createFromFile(Scanner file) {
         HashMap<String, LineData> concordance = new HashMap<>();
@@ -125,36 +144,36 @@ public class Concordance implements Serializable {
         }
         return result;
     }
-    
+
     /**
      * This method was written by Joel Wilhelm, and  will report words
      * within two lines of the first appearance of target word.
      * @param word - the center word
-     * @return 
+     * @return
      */
     public String words_distance_first(String word){
        //if the concordance does not contain the wanted word, tell the user
         if(!this.concordanceData.containsKey(word.toLowerCase())){
             System.out.println("We are sorry, but the word you are looking"
                     + "for does not exist within this concordance.");
-           
+
        }
         //create a scanner of the file to prepare to find the keyword
        IO.IO io = new IO.IO();
        Scanner scan;
         scan = io.read_file(this.bookTitle);
-        
+
         //first stores the first line that word appears in
         int first = this.concordanceData.get(word).lineIn.get(0);
-        //creates a counter 
+        //creates a counter
         int counter = 0;
-        
-        
+
+
         //advances scanner to the appropriate line
         while(scan.hasNextLine()&&counter<(first-2)){
             scan.nextLine();
             counter++;
-            
+
         }
         //create a new string to store the data in
         String words="";
@@ -167,52 +186,52 @@ public class Concordance implements Serializable {
         //add the line after the keyword
         words = words.concat(scan.nextLine());
         words = words.concat("\n");
-        
-        
-        
-        
-       return words; 
+
+
+
+
+       return words;
     }
-    
+
     /**
      * This method was written by Joel Wilhelm, and will report words within a
-     * certain distance of all appearances of the target word. 
+     * certain distance of all appearances of the target word.
      * @param word
      * @param numwords
-     * @return 
+     * @return
      */
     public String words_distance_all(String word, int numwords){
-        
+
         if(!this.concordanceData.containsKey(word.toLowerCase())){
             System.out.println("We are sorry, but the word you are looking"
                     + "for does not exist within this concordance.");
-           
+
        }
             //create a scanner of the file to prepare to find the keyword
        IO.IO io = new IO.IO();
        Scanner scan;
         scan = io.read_file(this.bookTitle);
         int numoccurances = 0;
-        
-        
+
+
         //create a new string to store the data in
         String words="";
-        
-        
+
+
         while(numoccurances<this.concordanceData.get(word).lineIn.size()){
         //first stores the first line that word appears in
         int first = this.concordanceData.get(word).lineIn.get(numoccurances);
-        //creates a counter 
+        //creates a counter
         int counter = 0;
-        
+
         //advances scanner to the appropriate line
         while(scan.hasNextLine()&&counter<(first-2)){
             scan.nextLine();
             counter++;
-            
+
         }
-        
-        
+
+
         //add the first line above the keyword
         words = words.concat("THE NEXT OCCURANCE OF THE WANTED WORDS IS WITHIN THESE"
                 + " THREE LINES: \n \n");
@@ -224,16 +243,16 @@ public class Concordance implements Serializable {
         //add the line after the keyword
         words = words.concat(scan.nextLine());
         words = words.concat("\n");
-        
-        
+
+
         numoccurances++;
         }
-       return words; 
-        
-        
-        
+       return words;
+
+
+
     }
-    
+
 
     /*
         Finds and returns a list of words within the distance in lines of the target word.
@@ -368,5 +387,5 @@ public class Concordance implements Serializable {
         return s.toLowerCase().replaceAll("[^a-zA-Z ]", "").trim();
     }
 
-    
+
 }
