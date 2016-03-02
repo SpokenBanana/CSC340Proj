@@ -2,6 +2,7 @@ package Concordance;
 
 
 import javax.sound.sampled.Line;
+import java.io.BufferedReader;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -48,48 +49,61 @@ public class Concordance implements Serializable {
     }
 
 
-    public HashMap<String, LineData> createFromFile(Scanner file) {
+    public HashMap<String, LineData> createFromFile(BufferedReader file) {
         HashMap<String, LineData> concordance = new HashMap<>();
         int lineNum = 0;
-        while(file.hasNextLine()) {
-            String[] words = file.nextLine().split(" ");
-            for(String word : words) {
-                word = word.replaceAll("[^a-zA-Z ]", "").toLowerCase().trim();
-                if (concordance.containsKey(word)) {
-                    LineData data = concordance.get(word);
-                    data.count++;
-                    data.lineIn.add(lineNum);
-                    concordance.put(word, data);
+        String line = "";
+        try{
+            while((line = file.readLine())!= null) {
+                String[] words = line.split(" ");
+                for(String word : words) {
+                    word = word.replaceAll("[^a-zA-Z ]", "").toLowerCase().trim();
+                    if (concordance.containsKey(word)) {
+                        LineData data = concordance.get(word);
+                        data.count++;
+                        data.lineIn.add(lineNum);
+                        concordance.put(word, data);
+                    }
+                    else {
+                        LineData data = new LineData();
+                        data.count = 1;
+                        data.word = word;
+                        data.lineIn.add(lineNum);
+                        concordance.put(word, data);
+                    }
                 }
-                else {
-                    LineData data = new LineData();
-                    data.count = 1;
-                    data.word = word;
-                    data.lineIn.add(lineNum);
-                    concordance.put(word, data);
-                }
+                lineNum++;
             }
-            lineNum++;
+        } catch (Exception e){
+            System.out.println("Problem with reading file");
+            return null;
         }
+
         concordanceData = concordance;
         return concordance;
     }
 
-    public HashMap<String, LineData> create(Scanner file) {
+    public boolean create(BufferedReader file) {
         boolean pastPreambles = false;
-        while(file.hasNextLine()) {
-            if (!pastPreambles) {
-                if (file.nextLine().startsWith("*** START")) {
-                    pastPreambles = true;
+        String line = "";
+        try{
+            while((line = file.readLine()) != null) {
+                if (!pastPreambles) {
+                    if (line.startsWith("*** START")) {
+                        pastPreambles = true;
+                    }
+                }
+                else {
+                    createFromFile(file);
+                    break;
                 }
             }
-            else {
-                createFromFile(file);
-                break;
-            }
+        } catch (Exception e){
+            System.out.println("Problem with reading file.");
+            return true;
         }
 
-        return concordanceData;
+        return pastPreambles;
     }
 
     public HashMap<String, LineData> create(Scanner file, String keyword) {
@@ -381,6 +395,19 @@ public class Concordance implements Serializable {
         }
 
         return words;
+    }
+
+    public ArrayList<LineData> rankData() {
+        ArrayList<LineData> ranks = new ArrayList<>();
+        for (String key : concordanceData.keySet()) {
+            ranks.add(concordanceData.get(key));
+        }
+        ranks.sort((o1, o2) -> {
+            if (o1.count < o2.count) return 1;
+            else if (o1.count > o2.count) return -1;
+            return 0;
+        });
+        return ranks;
     }
 
     public String strip(String s) {

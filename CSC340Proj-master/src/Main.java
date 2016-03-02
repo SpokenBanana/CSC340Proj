@@ -2,10 +2,7 @@ import Concordance.Concordance;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -20,6 +17,7 @@ public class Main {
 
 		IO.IO io = new IO.IO();
 		Concordance concordance = new Concordance();
+        Main main = new Main();
 
 		String command = "";
 		do {
@@ -34,19 +32,19 @@ public class Main {
             String[] commands = command.split(" ");
             // commands
             switch (commands[0]) {
-                case "-h":
+                case "h":
                     System.out.println("Here are the commands\n" +
-                            "-getconcordance <concordance name> | checks if concordance exists\n" +
-                            "-getbook <book name> | checks if book exists.\n" +
-                            "-createconcordnace <book file name> | creates and saves a concordance. \n" +
-                            "-createconcordance | Will open up a file explorer for you to pick a file you want to create a concordance from.\n" +
-                            "-loadconcordance <concordance file name> | loads the concordance and allows you to perform queries on it.\n" +
-                            "-books | returns a list of books.\n" +
-                            "-concordances | returns a list of saved concordances.\n" +
-                            "-searchconcordance <keyword> | returns a list of concordances that contain the given keyword in the title.\n" +
-                            "-searchbook <keyword> | returns a list of books that contain the given keyword in the title.");
+                            "getconcordance <concordance name> | checks if concordance exists\n" +
+                            "getbook <book name> | checks if book exists.\n" +
+                            "createconcordnace <book title> | creates and saves a concordance. \n" +
+                            "createconcordance | Will open up a file explorer for you to pick a file you want to create a concordance from.\n" +
+                            "loadconcordance <title of book> | loads the concordance and allows you to perform queries on it.\n" +
+                            "books | returns a list of books.\n" +
+                            "concordances | returns a list of saved concordances.\n" +
+                            "searchconcordance <keyword> | returns a list of concordances that contain the given keyword in the title.\n" +
+                            "searchbook <keyword> | returns a list of books that contain the given keyword in the title.");
                     break;
-                case "-getconcordance": {
+                case "getconcordance": {
                     String s = "";
                     for (int i = 1; i < commands.length; i++)
                         s += commands[i];
@@ -59,7 +57,7 @@ public class Main {
                     }
                     break;
                 }
-                case "-getbook": {
+                case "getbook": {
                     String s = "";
                     for (int i = 1; i < commands.length; i++)
                         s += commands[i];
@@ -72,9 +70,9 @@ public class Main {
                     }
                     break;
                 }
-                case "-searchconcordance": {
+                case "searchconcordance": {
                     ArrayList<String> result = io.search_concordance_list(commands[1]);
-                    System.out.println("Concordances: ");
+                    System.out.println("Concordances matching your title: ");
                     if (result.isEmpty())
                         System.out.println("No concordance found.");
                     else{
@@ -82,9 +80,9 @@ public class Main {
                     }
                     break;
                 }
-                case "-searchbook": {
+                case "searchbook": {
                     ArrayList<String> result = io.search_book_list(commands[1]);
-                    System.out.println("Books: ");
+                    System.out.println("Books matching the title: ");
                     if (result.isEmpty())
                         System.out.println("No books found.");
                     else{
@@ -92,7 +90,7 @@ public class Main {
                     }
                     break;
                 }
-                case "-createconcordance":
+                case "createconcordance":
                     // choose a file
                     if (commands.length == 1) {
                         JFileChooser  chooser = new JFileChooser();
@@ -102,11 +100,13 @@ public class Main {
                         if (returnval == JFileChooser.APPROVE_OPTION) {
                             File file = chooser.getSelectedFile();
                             io.saveNewBook(file);
-                            Scanner fileChosen = new Scanner(file);
+                            BufferedReader fileChosen = new BufferedReader(new FileReader(file));
                             concordance.bookTitle = file.getName().substring(0, file.getName().indexOf(".txt"));
                             concordance.createFromFile(fileChosen);
                             io.save(concordance);
                             System.out.println("Concordance created.");
+                            System.out.println(String.format("You can now use the command \"loadconcordance %s\" to load the concordance" +
+                                    "and perform queries on it.", concordance.bookTitle));
                         }
                         else {
                             System.out.println("Try again.");
@@ -118,39 +118,46 @@ public class Main {
                             book += commands[i];
                         }
                         // because we want it to be a .ser when saved
-                        concordance.bookTitle = book.substring(0, book.indexOf(".txt"));
+                        concordance.bookTitle = book;
                         try {
-                            Scanner file = new Scanner(io.get_book(book));
-                            concordance.create(file);
+                            BufferedReader file = new BufferedReader(new FileReader(io.get_book(book)));
+                            if (!concordance.create(file)){
+                                file = new BufferedReader(new FileReader(io.get_book(book)));
+                                concordance.createFromFile(file);
+                            }
+
                             io.save(concordance);
                             System.out.println("Concordance created.");
+                            System.out.println(String.format("You can now use the command \"loadconcordance %s\" to load the concordance" +
+                                    "and perform queries on it.", concordance.bookTitle));
                         } catch (Exception e) {
                             System.out.println("Book not found.");
                         }
                     }
                     break;
-                case "-books":
+                case "books":
                     ArrayList<String> files = io.get_book_list();
-                    System.out.println("Books:");
+                    System.out.println("Books saved:");
                     files.forEach(System.out::println);
                     break;
-                case "-concordances":
+                case "concordances":
                     ArrayList<String> concordances = io.get_concordance_list();
-                    System.out.println("Concordances: ");
+                    System.out.println("Concordances saved: ");
                     if (concordances.size() == 0)
                         System.out.println("No saved concordances.");
                     else
                         concordances.forEach(System.out::println);
                     break;
-                case "-loadconcordance":
+                case "loadconcordance":
                     String name = "";
                     for (int i = 1; i < commands.length; i++)
                         name += commands[i];
                     Concordance c;
+                    ArrayList<Concordance.LineData> ranks = new ArrayList<>();
                     try{
                         System.out.println("loading...");
                         // de-serialize
-                        FileInputStream fin = new FileInputStream("CSC340Proj-master/src/Concordances/" + name);
+                        FileInputStream fin = new FileInputStream("CSC340Proj-master/src/Concordances/" + name + ".ser");
                         ObjectInputStream in = new ObjectInputStream(fin);
                         c = (Concordance) in.readObject();
                     } catch (Exception e) {
@@ -166,15 +173,18 @@ public class Main {
                         line = query.nextLine();
                         String[] qs = line.split(" ");
                         switch (qs[0]) {
-                            case "-h":
-                                System.out.println("-count <word> | Returns the count of the word given.\n" +
-                                        "-lines <word> | Returns the line numbers the word appears in.\n" +
+                            case "h":
+                                System.out.println("count <word> | Returns the count of the word given.\n" +
+                                        "lines <word> | Returns the line numbers the word appears in.\n" +
                                         "wordsInDistanceLines <word> <distance> | Returns a list of words " +
                                         "within <distance> lines of <word>, <distance> being an integer.\n" +
                                         "wordsInDistanceWords <word> <distance> | Returns a list of words" +
-                                        "within <distance> words of <word>, <distance> being an integer.");
+                                        "within <distance> words of <word>, <distance> being an integer.\n" +
+                                        "rank <word> | returns the rank of the given word.\n" +
+                                        "exit | exits out of query mode.\n" +
+                                        "h | displays the list of legal query commands");
                                 break;
-                            case "-count": {
+                            case "count": {
                                 if (c.concordanceData.containsKey(qs[1])) {
                                     Concordance.LineData data = c.concordanceData.get(qs[1]);
                                     System.out.println(data.getCount());
@@ -183,7 +193,7 @@ public class Main {
                                 }
                                 break;
                             }
-                            case "-lines": {
+                            case "lines": {
                                 if (c.concordanceData.containsKey(qs[1])){
                                     Concordance.LineData data = c.concordanceData.get(qs[1]);
                                     data.getLines().forEach(System.out::println);
@@ -250,6 +260,33 @@ public class Main {
                                 words.forEach(System.out::println);
                                 break;
                             }
+                            case "rank": {
+                                if (qs.length < 2) {
+                                    System.out.println("\nNeed the word you want to get the of.");
+                                }
+                                // don't load in ranks until we need to.
+                                if (ranks.isEmpty()) {
+                                    ranks = c.rankData();
+                                }
+
+                                int i;
+                                for ( i = 0; i < ranks.size(); i++) {
+                                    if (ranks.get(i).word.equals(qs[1]))
+                                        break;
+                                }
+                                if (i < ranks.size()) {
+                                    Concordance.LineData data = ranks.get(i);
+                                    System.out.println(String.format("%s is ranked %d out of %d with %d appearances.", data.word, i, ranks.size(), data.count));
+                                }
+                                else {
+                                    System.out.println("Word not found in the text.");
+                                }
+                                break;
+                            }
+                            case "exit": {
+                                line = "";
+                                break;
+                            }
                             default:
                                 if (!line.equals(""))
                                     System.out.println("Command not recognized.");
@@ -258,6 +295,10 @@ public class Main {
                     }while (!line.equals(""));
 
                     break;
+                case "exit": {
+                    command = "";
+                    break;
+                }
                 default:
                     System.out.println("command not recognized");
                     break;

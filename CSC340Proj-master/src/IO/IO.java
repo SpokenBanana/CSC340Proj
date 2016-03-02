@@ -23,7 +23,7 @@ public class IO {
     public ArrayList<String> get_book_list() {
         //create a file to read from
         //creates a file to search through
-        File Bookfile = new File("src/Texts");
+        File Bookfile = new File("CSC340Proj-master/src/Texts");
         //creates an array of files to search through
         File[] filelist = Bookfile.listFiles();
         //creates an array list tostore the list of books in
@@ -36,7 +36,7 @@ public class IO {
             if (filelist[i].toString().contains(".txt")) {
 
                 //ad it to the array
-                ListofBooks.add(filelist[i].toString());
+                ListofBooks.add(filelist[i].getName());
             }
 
         }
@@ -73,7 +73,7 @@ public class IO {
                 //if the title contains the wanted keywords
                 if (filelist[i].toString().toLowerCase().contains(title.toLowerCase())) {
                     //add it
-                    ListofBooks.add(filelist[i].toString());
+                    ListofBooks.add(filelist[i].getName().substring(0, filelist[i].getName().indexOf(".txt")));
                 }
 
                
@@ -103,6 +103,7 @@ public class IO {
         File Bookfile = new File("CSC340Proj-master/src/Texts");
         //creates an array of files to search through
         File[] filelist = Bookfile.listFiles();
+        title += ".txt";
 
         //searches through the file and adds all .txt files
         //used to keep track of how many times 
@@ -151,8 +152,8 @@ public class IO {
         //puts each of the filelist concordances into the ArrayList
         for (int i = 0; i < filelist.length; i++) {
             //check if keyword is in the filename
-            if (filelist[i].toString().toLowerCase().contains(keywords.toLowerCase())) {
-                ListofConcordances.add(filelist[i].toString());
+            if (filelist[i].getName().endsWith(".ser") && filelist[i].toString().toLowerCase().contains(keywords.toLowerCase())) {
+                ListofConcordances.add(filelist[i].getName().substring(0, filelist[i].getName().indexOf(".ser")));
             }
 
         }
@@ -205,7 +206,7 @@ public class IO {
      */
     public ArrayList<String> get_concordance_list() {
         //creates the concordances file
-        File Concordancesfile = new File("src/Concordances");
+        File Concordancesfile = new File("CSC340Proj-master/src/Concordances");
         //creates arraylist
         ArrayList<String> ListofConcordances = new java.util.ArrayList<>();
         //creates filelist to write to arraylist
@@ -213,7 +214,7 @@ public class IO {
         //puts each of the filelist concordances into the ArrayList
         for (int i = 0; i < filelist.length; i++) {
             if (filelist[i].toString().endsWith(".ser"))
-                ListofConcordances.add(filelist[i].getName());
+                ListofConcordances.add(filelist[i].getName().substring(0, filelist[i].getName().indexOf(".ser")));
         }
         //return ListofConcordances;
         return ListofConcordances;
