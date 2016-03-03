@@ -31,6 +31,10 @@ public class IO {
         File Bookfile = new File(startPath + "Texts");
         //creates an array of files to search through
         File[] filelist = Bookfile.listFiles();
+        if (filelist == null) {
+            Bookfile.mkdir();
+            filelist = Bookfile.listFiles();
+        }
         //creates an array list tostore the list of books in
         ArrayList<String> ListofBooks = new java.util.ArrayList<>();
         //searches through the file and adds all .txt files
@@ -67,6 +71,10 @@ public class IO {
         File Bookfile = new File(startPath + "Texts");
         //creates an array of files to search through
         File[] filelist = Bookfile.listFiles();
+        if (filelist == null) {
+            Bookfile.mkdir();
+            filelist = Bookfile.listFiles();
+        }
         //creates an array list tostore the list of books in
         ArrayList<String> ListofBooks = new java.util.ArrayList<>();
         //searches through the file and adds all .txt files
@@ -108,6 +116,10 @@ public class IO {
         File Bookfile = new File(startPath + "Texts");
         //creates an array of files to search through
         File[] filelist = Bookfile.listFiles();
+        if (filelist == null) {
+            Bookfile.mkdir();
+            filelist = Bookfile.listFiles();
+        }
         title += ".txt";
 
         //searches through the file and adds all .txt files
@@ -154,6 +166,10 @@ public class IO {
         ArrayList<String> ListofConcordances = new java.util.ArrayList<>();
         //creates filelist to write to arraylist
         File[] filelist = Concordancesfile.listFiles();
+        if (filelist == null) {
+            Concordancesfile.mkdir();
+            filelist = Concordancesfile.listFiles();
+        }
         //puts each of the filelist concordances into the ArrayList
         for (int i = 0; i < filelist.length; i++) {
             //check if keyword is in the filename
@@ -182,6 +198,10 @@ public class IO {
         int location = 0;
         //creates filelist to write to arraylist
         File[] filelist = Concordancesfile.listFiles();
+        if (filelist == null) {
+            Concordancesfile.mkdir();
+            filelist = Concordancesfile.listFiles();
+        }
         //counts each time a title with that keyword is found
         for (int i = 0; i < filelist.length; i++) {
             //checks to see if the file contains keyword
@@ -216,6 +236,10 @@ public class IO {
         ArrayList<String> ListofConcordances = new java.util.ArrayList<>();
         //creates filelist to write to arraylist
         File[] filelist = Concordancesfile.listFiles();
+        if (filelist == null) {
+            Concordancesfile.mkdir();
+            filelist = Concordancesfile.listFiles();
+        }
         //puts each of the filelist concordances into the ArrayList
         for (int i = 0; i < filelist.length; i++) {
             if (filelist[i].toString().endsWith(".ser"))
@@ -270,19 +294,22 @@ public class IO {
     }
 
     public void save(Concordance concordance) {
+        File file = new File(startPath + "Concordances");
+        if (!file.exists()) file.mkdir();
         try {
-
             FileOutputStream fout = new FileOutputStream(startPath + "Concordances/" +concordance.bookTitle +".ser");
             ObjectOutputStream writer = new ObjectOutputStream(fout);
             writer.writeObject(concordance);
             writer.close();
 
         } catch (Exception e) {
-            System.out.println("could not write to file, try agian.");
+            System.out.println("could not write to file, try again.");
         }
     }
 
     public void saveNewBook(File file) {
+        File directory = new File(startPath + "Texts");
+        if (!directory.exists()) directory.mkdir();
         File newFile = new File(startPath + "Texts/" + file.getName());
         try {
             Files.copy(file.toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);

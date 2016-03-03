@@ -17,15 +17,16 @@ public class Main {
 
 		IO.IO io = new IO.IO();
 		Concordance concordance = new Concordance();
-        Main main = new Main();
 
 		String command = "";
+        boolean done = false;
 		do {
             System.out.print("Enter command (-h for help) (ENTER to exit): ");
             command = scanner.nextLine();
 
             if (command.equals("")){
                 System.out.println("Good-bye.");
+                done = true;
                 break;
             }
 
@@ -142,8 +143,12 @@ public class Main {
                 case "books":
                     ArrayList<String> files = io.get_book_list();
                     System.out.println("\n\t=== Books saved ===\n");
-					for (String s : files) System.out.println(s);
-                    System.out.println();
+                    if (files.size() == 0) System.out.println("No books found.\n");
+                    else
+                        for (String s : files) System.out.println(s);
+                    System.out.println("\nYour favorite book isn't here?\n" +
+                            "Download it from https://www.gutenberg.org/ and use the command \"createconcordance\" (no arguments)\n" +
+                            "and to navigate to where you downloaded the book, select it, and we will store it here!\n");
                     break;
                 case "concordances":
                     ArrayList<String> concordances = io.get_concordance_list();
@@ -166,16 +171,22 @@ public class Main {
                         // de-serialize
                         c = io.loadConcordance(name);
                     } catch (Exception e) {
-                        System.out.println("Could not find the concordance, try again");
+                        System.out.println(String.format("Could not find the concordance. Check your spelling, or try creating the concordance first with \"createconcordance %s\" " +
+                                "if you have the book saved.\nIf not, save the book with \"createconcordance\" and navigate to your book on your machine.", name));
                         break;
                     }
                     String line = "";
                     System.out.println("\nConcordance loaded. You can now perform queries on this concordance\n");
 
                     Scanner query = new Scanner(System.in);
+                    boolean finished = false;
                      do {
                         System.out.print("What queries would you like to do? (-h for query commands) (ENTER to exit): ");
                         line = query.nextLine();
+                         if (line.equals("")) {
+                             finished = true;
+                             break;
+                         }
                         String[] qs = line.split(" ");
                         switch (qs[0]) {
                             case "h":
@@ -290,6 +301,7 @@ public class Main {
                             }
                             case "exit": {
                                 line = "";
+                                finished = true;
                                 break;
                             }
                             default:
@@ -297,17 +309,19 @@ public class Main {
                                     System.out.println("Command not recognized.");
                                 break;
                         }
-                    }while (!line.equals(""));
+                    }while (!line.equals("") && !finished);
 
                     break;
                 case "exit": {
                     command = "";
+                    done = true;
                     break;
                 }
                 default:
                     System.out.println("command not recognized");
                     break;
             }
-		} while (!command.equals(""));
+		} while (!command.equals("") && !done);
+        scanner.close();
 	}
 }
