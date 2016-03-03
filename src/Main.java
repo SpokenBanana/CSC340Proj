@@ -26,7 +26,7 @@ public class Main {
 
             if (command.equals("")){
                 System.out.println("Good-bye.");
-                return;
+                break;
             }
 
             String[] commands = command.split(" ");
@@ -53,7 +53,7 @@ public class Main {
                         System.out.println(String.format("Concordance found. %s", cfile.getName()));
                     }
                     else {
-                        System.out.println("Concordance does not exist");
+                        System.out.println("\nConcordance does not exist\n");
                     }
                     break;
                 }
@@ -63,30 +63,32 @@ public class Main {
                         s += commands[i];
                     File book = io.get_book(s);
                     if (book != null) {
-                        System.out.println(String.format("Book found. %s", book.getName()));
+                        System.out.println(String.format("\nBook found. %s", book.getName()));
                     }
                     else {
-                        System.out.println("Book does not exist");
+                        System.out.println("\nBook does not exist\n");
                     }
                     break;
                 }
                 case "searchconcordance": {
                     ArrayList<String> result = io.search_concordance_list(commands[1]);
-                    System.out.println("Concordances matching your title: ");
+                    System.out.println("\n\t==== Concordances matching your title ==== \n");
                     if (result.isEmpty())
-                        System.out.println("No concordance found.");
+                        System.out.println("\nNo concordance found.\n");
                     else{
-                        result.forEach(System.out::println);
+						for (String s : result) System.out.println(s);
+                        System.out.println();
                     }
                     break;
                 }
                 case "searchbook": {
                     ArrayList<String> result = io.search_book_list(commands[1]);
-                    System.out.println("Books matching the title: ");
+                    System.out.println("\n\t==== Books matching the title ==== \n");
                     if (result.isEmpty())
-                        System.out.println("No books found.");
+                        System.out.println("\n\t\tNo books found.\n");
                     else{
-                        result.forEach(System.out::println);
+						for (String s : result) System.out.println(s);
+                        System.out.println();
                     }
                     break;
                 }
@@ -102,14 +104,15 @@ public class Main {
                             io.saveNewBook(file);
                             BufferedReader fileChosen = new BufferedReader(new FileReader(file));
                             concordance.bookTitle = file.getName().substring(0, file.getName().indexOf(".txt"));
+                            System.out.println("Creating concordance....");
                             concordance.createFromFile(fileChosen);
                             io.save(concordance);
                             System.out.println("Concordance created.");
-                            System.out.println(String.format("You can now use the command \"loadconcordance %s\" to load the concordance" +
-                                    "and perform queries on it.", concordance.bookTitle));
+                            System.out.println(String.format("\nYou can now use the command \"loadconcordance %s\" to load the concordance " +
+                                    "and perform queries on it.\n", concordance.bookTitle));
                         }
                         else {
-                            System.out.println("Try again.");
+                            System.out.println("\nTry again.\n");
                         }
                     } // open selected file
                     else {
@@ -121,15 +124,16 @@ public class Main {
                         concordance.bookTitle = book;
                         try {
                             BufferedReader file = new BufferedReader(new FileReader(io.get_book(book)));
+                            System.out.println("\nCreating concordance...");
                             if (!concordance.create(file)){
                                 file = new BufferedReader(new FileReader(io.get_book(book)));
                                 concordance.createFromFile(file);
                             }
 
                             io.save(concordance);
-                            System.out.println("Concordance created.");
+                            System.out.println("Concordance created.\n");
                             System.out.println(String.format("You can now use the command \"loadconcordance %s\" to load the concordance" +
-                                    "and perform queries on it.", concordance.bookTitle));
+                                    "and perform queries on it.\n", concordance.bookTitle));
                         } catch (Exception e) {
                             System.out.println("Book not found.");
                         }
@@ -137,16 +141,19 @@ public class Main {
                     break;
                 case "books":
                     ArrayList<String> files = io.get_book_list();
-                    System.out.println("Books saved:");
-                    files.forEach(System.out::println);
+                    System.out.println("\n\t=== Books saved ===\n");
+					for (String s : files) System.out.println(s);
+                    System.out.println();
                     break;
                 case "concordances":
                     ArrayList<String> concordances = io.get_concordance_list();
-                    System.out.println("Concordances saved: ");
+                    System.out.println("\n\t=== Concordances saved ===\n ");
                     if (concordances.size() == 0)
                         System.out.println("No saved concordances.");
-                    else
-                        concordances.forEach(System.out::println);
+					else {
+						for (String s : concordances) System.out.println(s);
+                        System.out.println();
+                    }
                     break;
                 case "loadconcordance":
                     String name = "";
@@ -154,22 +161,20 @@ public class Main {
                         name += commands[i];
                     Concordance c;
                     ArrayList<Concordance.LineData> ranks = new ArrayList<>();
+                    System.out.println("loading...");
                     try{
-                        System.out.println("loading...");
                         // de-serialize
-                        FileInputStream fin = new FileInputStream("CSC340Proj-master/src/Concordances/" + name + ".ser");
-                        ObjectInputStream in = new ObjectInputStream(fin);
-                        c = (Concordance) in.readObject();
+                        c = io.loadConcordance(name);
                     } catch (Exception e) {
                         System.out.println("Could not find the concordance, try again");
                         break;
                     }
                     String line = "";
-                    System.out.println("Concordance loaded");
+                    System.out.println("\nConcordance loaded. You can now perform queries on this concordance\n");
 
                     Scanner query = new Scanner(System.in);
                      do {
-                        System.out.println("What queries would you like to do? (-h for query commands) (ENTER to exit): ");
+                        System.out.print("What queries would you like to do? (-h for query commands) (ENTER to exit): ");
                         line = query.nextLine();
                         String[] qs = line.split(" ");
                         switch (qs[0]) {
@@ -196,7 +201,7 @@ public class Main {
                             case "lines": {
                                 if (c.concordanceData.containsKey(qs[1])){
                                     Concordance.LineData data = c.concordanceData.get(qs[1]);
-                                    data.getLines().forEach(System.out::println);
+									for (Integer s : data.getLines()) System.out.println(s);
                                 }
                                 else {
                                     System.out.println("Word not found.");
@@ -217,7 +222,7 @@ public class Main {
                                 }
                                 ArrayList<String> words = c.wordsDistanceInLines(qs[1], distance);
                                 System.out.println(String.format("Words within %d distance of %s", distance, qs[1]));
-                                words.forEach(System.out::println);
+								for (String s : words) System.out.println(s);
                                 break;
                             }
                             case "wordsInDistanceWords": {
@@ -232,10 +237,10 @@ public class Main {
                                     System.out.println("The last parameter must be an integer value.");
                                     break;
                                 }
-                                Scanner bookScanner = new Scanner(io.get_book(c.bookTitle));
+                                BufferedReader bookScanner = new BufferedReader(new FileReader(io.get_book(c.bookTitle)));
                                 ArrayList<String> words = c.wordsDistanceInWords(qs[1], distance, bookScanner);
                                 System.out.println(String.format("Words within %d distance in words of %s:", distance, qs[1]));
-                                words.forEach(System.out::println);
+								for (String s : words) System.out.println(s);
                                 break;
                             }
                             case "phraseInDistanceLines": {
@@ -254,10 +259,10 @@ public class Main {
                                     System.out.println("The first parameter must be an integer.");
                                     break;
                                 }
-                                Scanner bookScanner = new Scanner(io.get_book(c.bookTitle));
+                                BufferedReader bookScanner = new BufferedReader(new FileReader(io.get_book(c.bookTitle)));
                                 ArrayList<String> words = c.findPhraseInLines(phrase, distance, bookScanner);
                                 System.out.println(String.format("Words within %d distance in lines of \"%s\"", distance, phrase));
-                                words.forEach(System.out::println);
+								for (String s : words) System.out.println(s);
                                 break;
                             }
                             case "rank": {

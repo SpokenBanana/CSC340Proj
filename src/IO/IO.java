@@ -13,6 +13,11 @@ import java.util.*;
 import java.io.*;
 
 public class IO {
+    String startPath;
+
+    public IO() {
+        startPath = "";
+    }
 
     /**
      * This method should create an ArrayList of books that are stored on the
@@ -23,7 +28,7 @@ public class IO {
     public ArrayList<String> get_book_list() {
         //create a file to read from
         //creates a file to search through
-        File Bookfile = new File("CSC340Proj-master/src/Texts");
+        File Bookfile = new File(startPath + "Texts");
         //creates an array of files to search through
         File[] filelist = Bookfile.listFiles();
         //creates an array list tostore the list of books in
@@ -59,7 +64,7 @@ public class IO {
     public ArrayList<String> search_book_list(String title) {
         //create a file to read from
         //creates a file to search through
-        File Bookfile = new File("CSC340Proj-master/src/Texts");
+        File Bookfile = new File(startPath + "Texts");
         //creates an array of files to search through
         File[] filelist = Bookfile.listFiles();
         //creates an array list tostore the list of books in
@@ -100,7 +105,7 @@ public class IO {
     public File get_book(String title) {
         //create a file to read from
         //creates a file to search through
-        File Bookfile = new File("CSC340Proj-master/src/Texts");
+        File Bookfile = new File(startPath + "Texts");
         //creates an array of files to search through
         File[] filelist = Bookfile.listFiles();
         title += ".txt";
@@ -144,7 +149,7 @@ public class IO {
      */
     public ArrayList<String> search_concordance_list(String keywords) {
         //creates the concordances file
-        File Concordancesfile = new File("CSC340Proj-master/src/Concordances");
+        File Concordancesfile = new File(startPath + "Concordances");
         //creates arraylist
         ArrayList<String> ListofConcordances = new java.util.ArrayList<>();
         //creates filelist to write to arraylist
@@ -206,7 +211,7 @@ public class IO {
      */
     public ArrayList<String> get_concordance_list() {
         //creates the concordances file
-        File Concordancesfile = new File("CSC340Proj-master/src/Concordances");
+        File Concordancesfile = new File(startPath + "Concordances");
         //creates arraylist
         ArrayList<String> ListofConcordances = new java.util.ArrayList<>();
         //creates filelist to write to arraylist
@@ -267,7 +272,7 @@ public class IO {
     public void save(Concordance concordance) {
         try {
 
-            FileOutputStream fout = new FileOutputStream("CSC340Proj-master/src/Concordances/"+concordance.bookTitle +".ser");
+            FileOutputStream fout = new FileOutputStream(startPath + "Concordances/" +concordance.bookTitle +".ser");
             ObjectOutputStream writer = new ObjectOutputStream(fout);
             writer.writeObject(concordance);
             writer.close();
@@ -278,12 +283,18 @@ public class IO {
     }
 
     public void saveNewBook(File file) {
-        File newFile = new File("CSC340Proj-master/src/Texts/" + file.getName());
+        File newFile = new File(startPath + "Texts/" + file.getName());
         try {
             Files.copy(file.toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             System.out.println("Could not copy the file");
         }
+    }
+
+    public Concordance loadConcordance(String title) throws Exception {
+        FileInputStream fin = new FileInputStream(startPath + "Concordances/" + title + ".ser");
+        ObjectInputStream in = new ObjectInputStream(fin);
+        return (Concordance) in.readObject();
     }
 
 }

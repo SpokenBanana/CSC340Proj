@@ -33,18 +33,6 @@ public class MainPanel extends JPanel {
 
         add(label);
         add(label("What would you like to do?", 10, 100, 500, 100));
-
-        add(button("Search", 50, 200, 200, 40, (ActionEvent e) -> {
-
-        }));
-
-        add(button("Create", 300, 200, 200, 40, (ActionEvent e) -> {
-
-        }));
-
-        add(button("See list", 50, 300, 200, 40, (ActionEvent e) -> {
-
-        }));
     }
 
     public JLabel label(String text, int x, int y, int width, int height){
