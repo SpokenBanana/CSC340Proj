@@ -293,8 +293,13 @@ public class IO {
 
     }
 
+    /**
+     * serializes the concordance object
+     * @param concordance concordance to serialize
+     */
     public void save(Concordance concordance) {
         File file = new File(startPath + "Concordances");
+        // we must enforce use of these directories.
         if (!file.exists()) file.mkdir();
         try {
             FileOutputStream fout = new FileOutputStream(startPath + "Concordances/" +concordance.bookTitle +".ser");
@@ -307,6 +312,10 @@ public class IO {
         }
     }
 
+    /**
+     * copies the book into our library
+     * @param file file to add to our library
+     */
     public void saveNewBook(File file) {
         File directory = new File(startPath + "Texts");
         if (!directory.exists()) directory.mkdir();

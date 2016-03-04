@@ -50,13 +50,22 @@ public class Concordance implements Serializable {
     }
 
 
+    /**
+     * creates concordance with the given file, assumes that the file either has no preambles or is given at a point where
+     * it is past the preambles
+     * @param file the file to create the concordance from
+     * @param lineNum the line number we are currently at
+     * @return the finished data set of the concordance
+     */
     public HashMap<String, LineData> createFromFile(BufferedReader file, int lineNum) {
         HashMap<String, LineData> concordance = new HashMap<>();
         String line = "";
+        // we need the try because readLine() throws an exception
         try{
             while((line = file.readLine())!= null) {
                 String[] words = line.split(" ");
                 for(String word : words) {
+                    // ignore punctuation
                     word = word.replaceAll("[^a-zA-Z ]", "").toLowerCase().trim();
                     if (concordance.containsKey(word)) {
                         LineData data = concordance.get(word);
@@ -83,6 +92,12 @@ public class Concordance implements Serializable {
         return concordance;
     }
 
+    /**
+     * Will create the concordance from file. We will look for the preambles and if found, start creating the concordance
+     * after it. If we never find the concordance, then we return false indicating that there was no preambles.
+     * @param file file to create the concordance from
+     * @return true if we were able to get past preambles, false if not.
+     */
     public boolean create(BufferedReader file) {
         boolean pastPreambles = false;
         String line = "";
@@ -154,6 +169,7 @@ public class Concordance implements Serializable {
 
     @Override
     public String toString() {
+        // for debugging
         String result = "- " + bookTitle + "\n";
         if (concordanceData != null) {
             for (String key : concordanceData.keySet()) {
@@ -274,7 +290,8 @@ public class Concordance implements Serializable {
 
     /**
      * query
-     * Finds and returns a list of words within the distance in lines of the target word.
+     * Finds and returns a list of words within the distance in lines of the target word. Makes sure to ignore any words
+     * the user wanted us to ignore.
      */
     public ArrayList<String> wordsDistanceInLines(String target, int lineDistance, ArrayList<String> toIgnore) {
         LineData targetData = concordanceData.get(target);
@@ -303,26 +320,33 @@ public class Concordance implements Serializable {
 
     /**
      * query
-     * Finds and returns a list of words within the distance in words of the target word
+     * Finds and returns a list of words within the distance in words of the target word.
      */
 
     public ArrayList<String> wordsDistanceInWords(String target, int wordDistance, BufferedReader file, ArrayList<String> toIgnore) {
         LineData targetData = concordanceData.get(target);
         ArrayList<String> words = new ArrayList<>();
+
+        // circle queue used to get the last "wordDistance" words.
         CircleQueue<String> wordsBefore = new CircleQueue<String>(wordDistance);
+
         int saving = 0;
         String line = "";
+        // need the try since readLine() throuws an exception
         try{
             while ((line = file.readLine()) != null) {
                 String[] lineWords = line.split(" ");
                 for (String word : lineWords) {
                     if (toIgnore.contains(word)) continue;
                     word = strip(word);
+
+                    // we saw the phrase, now start saving the words
                     if (saving != 0){
                         if (!words.contains(word))
                             words.add(word);
                         saving--;
                     }
+
                     if (word.equals(target)) {
                         // start adding words to the words
                         while (!wordsBefore.isEmpty()) {
@@ -342,6 +366,7 @@ public class Concordance implements Serializable {
             return null;
         }
 
+        // get any words that were left over
         while (!wordsBefore.isEmpty()) {
             String toAdd = wordsBefore.pop();
             if (!words.contains(toAdd))
@@ -428,8 +453,8 @@ public class Concordance implements Serializable {
             if (toIgnore.contains(key)) continue;
             ranks.add(concordanceData.get(key));
         }
+        // tells the sort method how to sort LineData by count
 		Comparator<LineData> compare = new Comparator<LineData>() {
-
 			@Override
 			public int compare(LineData o1, LineData o2) {
 				if (o1.count < o2.count) return 1;
@@ -441,10 +466,21 @@ public class Concordance implements Serializable {
         return ranks;
     }
 
+    /**
+     * check if this concordance has the given word n or more times
+     * @param word word to find
+     * @param n amount we want to know if the word appears in the concordance
+     * @return true if the word appears n or more times, false if not
+     */
     public boolean hasWordNTimes(String word, int n) {
         return concordanceData.containsKey(word) && concordanceData.get(word).count >= n;
     }
 
+    /**
+     * remove puncuation from the word.
+     * @param s word to remove puntuation from
+     * @return word striped of punctuation
+     */
     public String strip(String s) {
         return s.toLowerCase().replaceAll("[^a-zA-Z ]", "").trim();
     }

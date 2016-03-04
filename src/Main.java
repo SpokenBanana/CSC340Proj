@@ -8,19 +8,21 @@ import java.util.Scanner;
 
 public class Main {
     /*
-        Notes:
-        start of actual book after:
-        *** START OF THIS PROJECT GUTENBERG EBOOK TOM SAWYER ***
+        Main class serves to only provide the command line so far. Final product should break these commands into their
+        own method the main class handles so that it isn't one long method.
      */
 	public static void main(String[] args) throws FileNotFoundException {
 		Scanner scanner = new Scanner(System.in);
-
 		IO.IO io = new IO.IO();
-
 		String command = "";
+
+        System.out.println("\t\t==== Welcome to ConcordanceCreate4000! ====");
+        System.out.println("\n\t You can now create concordance from our library and query it with our query commands!");
+        System.out.println("\t Get started with the \"h\" command to see the commands you can use!");
+
         boolean done = false;
 		do {
-            System.out.print("Enter command (-h for help) (ENTER to exit): ");
+            System.out.print("Enter command (h for help): ");
             command = scanner.nextLine();
 
             if (command.equals("")){
@@ -30,7 +32,8 @@ public class Main {
             }
 
             String[] commands = command.split(" ");
-            // commands
+            // commands are in commands[0], when adding a new command create another "case "yourcommand": " and
+            // handle it within that block.
             switch (commands[0]) {
                 case "h":
                     System.out.println("Here are the commands\n" +
@@ -46,9 +49,11 @@ public class Main {
                     break;
                 case "getconcordance": {
                     String s = "";
+                    // get name, may have spaces
                     for (int i = 1; i < commands.length; i++)
                         s += commands[i];
                     File cfile = io.get_book(s);
+                    // may not find file
                     if (cfile != null) {
                         System.out.println(String.format("Concordance found. %s", cfile.getName()));
                     }
@@ -95,8 +100,10 @@ public class Main {
                 case "createconcordance":
                     // choose a file
                     if (commands.length == 1) {
+                        // open file explorer
                         Concordance concordance = new Concordance();
                         JFileChooser  chooser = new JFileChooser();
+                        // restrict it to only select text files
                         FileNameExtensionFilter filter = new FileNameExtensionFilter("TEXT FILES", "txt", "text");
                         chooser.setFileFilter(filter);
                         int returnval = chooser.showOpenDialog(new JFrame("Choose a file"));
@@ -106,7 +113,12 @@ public class Main {
                             BufferedReader fileChosen = new BufferedReader(new FileReader(file));
                             concordance.bookTitle = file.getName().substring(0, file.getName().indexOf(".txt"));
                             System.out.println("Creating concordance....");
-                            concordance.create(fileChosen);
+                            // will return false if it has no preambles
+                            if (!concordance.create(fileChosen)) {
+                                // no preambles, so just read from start
+                                fileChosen = new BufferedReader(new FileReader(file));
+                                concordance.createFromFile(fileChosen, 0);
+                            }
                             io.save(concordance);
                             System.out.println("Concordance created.");
                             System.out.println(String.format("\nYou can now use the command \"loadconcordance %s\" to load the concordance " +
@@ -167,6 +179,7 @@ public class Main {
                         break;
                     }
                     String word = commands[1];
+
                     int n = 0;
                     try {
                         n = Integer.parseInt(commands[2]);
@@ -209,15 +222,17 @@ public class Main {
 
                     ArrayList<String> toIgnore = new ArrayList<>();
 
+                    // begin query mode
                     boolean finished = false;
                      do {
-                        System.out.print("What queries would you like to do? (-h for query commands) (ENTER to exit): ");
+                        System.out.print("What queries would you like to do? (h for query commands): ");
                         line = query.nextLine();
                          if (line.equals("")) {
                              finished = true;
                              break;
                          }
                         String[] qs = line.split(" ");
+                         // commands for queries here
                         switch (qs[0]) {
                             case "h":
                                 System.out.println("count <word> | Returns the count of the word given.\n" +
@@ -322,6 +337,7 @@ public class Main {
                                     if (ranks.get(i).word.equals(qs[1]))
                                         break;
                                 }
+
                                 if (i < ranks.size()) {
                                     Concordance.LineData data = ranks.get(i);
                                     System.out.println(String.format("%s is ranked %d out of %d with %d appearances.", data.word, i, ranks.size(), data.count));
@@ -373,6 +389,7 @@ public class Main {
                     break;
                 case "exit": {
                     command = "";
+                    System.out.println("Good-bye");
                     done = true;
                     break;
                 }
