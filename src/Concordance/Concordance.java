@@ -50,7 +50,7 @@ public class Concordance implements Serializable {
     }
 
 
-    private HashMap<String, LineData> createFromFile(BufferedReader file, int lineNum) {
+    public HashMap<String, LineData> createFromFile(BufferedReader file, int lineNum) {
         HashMap<String, LineData> concordance = new HashMap<>();
         String line = "";
         try{
@@ -86,6 +86,7 @@ public class Concordance implements Serializable {
     public boolean create(BufferedReader file) {
         boolean pastPreambles = false;
         String line = "";
+        concordanceData = new HashMap<>();
         int lineNum = 0;
         try{
             while((line = file.readLine()) != null) {
@@ -104,6 +105,7 @@ public class Concordance implements Serializable {
             System.out.println("Problem with reading file.");
             return true;
         }
+
 
         return pastPreambles;
     }
@@ -281,6 +283,8 @@ public class Concordance implements Serializable {
         for (String key : concordanceData.keySet()) {
             // skip the target word
             if (key.equals(target)) continue;
+            // skip words to ignore
+            if (toIgnore.contains(key)) continue;
 
             LineData word = concordanceData.get(key);
             // search through lines the target word is found
@@ -312,6 +316,7 @@ public class Concordance implements Serializable {
             while ((line = file.readLine()) != null) {
                 String[] lineWords = line.split(" ");
                 for (String word : lineWords) {
+                    if (toIgnore.contains(word)) continue;
                     word = strip(word);
                     if (saving != 0){
                         if (!words.contains(word))
@@ -381,6 +386,7 @@ public class Concordance implements Serializable {
                 }
 
                 for (String part : parts) {
+                    if (toIgnore.contains(part)) continue;
                     // add a new word to the phrase queue
                     phr.add(part);
                     // is it full? does what it currently have match the phrase?
@@ -419,6 +425,7 @@ public class Concordance implements Serializable {
     public ArrayList<LineData> rankData(ArrayList<String> toIgnore) {
         ArrayList<LineData> ranks = new ArrayList<>();
         for (String key : concordanceData.keySet()) {
+            if (toIgnore.contains(key)) continue;
             ranks.add(concordanceData.get(key));
         }
 		Comparator<LineData> compare = new Comparator<LineData>() {
@@ -432,6 +439,10 @@ public class Concordance implements Serializable {
 		};
 		ranks.sort(compare);
         return ranks;
+    }
+
+    public boolean hasWordNTimes(String word, int n) {
+        return concordanceData.containsKey(word) && concordanceData.get(word).count >= n;
     }
 
     public String strip(String s) {

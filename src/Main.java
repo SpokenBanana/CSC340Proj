@@ -16,7 +16,6 @@ public class Main {
 		Scanner scanner = new Scanner(System.in);
 
 		IO.IO io = new IO.IO();
-		Concordance concordance = new Concordance();
 
 		String command = "";
         boolean done = false;
@@ -96,6 +95,7 @@ public class Main {
                 case "createconcordance":
                     // choose a file
                     if (commands.length == 1) {
+                        Concordance concordance = new Concordance();
                         JFileChooser  chooser = new JFileChooser();
                         FileNameExtensionFilter filter = new FileNameExtensionFilter("TEXT FILES", "txt", "text");
                         chooser.setFileFilter(filter);
@@ -121,6 +121,7 @@ public class Main {
                         for (int i = 1; i < commands.length; i++) {
                             book += commands[i];
                         }
+                        Concordance concordance = new Concordance();
                         // because we want it to be a .ser when saved
                         concordance.bookTitle = book;
                         try {
@@ -128,7 +129,7 @@ public class Main {
                             System.out.println("\nCreating concordance...");
                             if (!concordance.create(file)){
                                 file = new BufferedReader(new FileReader(io.get_book(book)));
-                                concordance.create(file);
+                                concordance.createFromFile(file, 0);
                             }
 
                             io.save(concordance);
@@ -152,13 +153,39 @@ public class Main {
                     break;
                 case "concordances":
                     ArrayList<String> concordances = io.get_concordance_list();
-                    System.out.println("\n\t=== Concordances saved ===\n ");
+                    System.out.println("\n\t=== Concordances saved ===\n");
                     if (concordances.size() == 0)
                         System.out.println("No saved concordances.");
 					else {
 						for (String s : concordances) System.out.println(s);
                         System.out.println();
                     }
+                    break;
+                case "concordanceWith":
+                    if (commands.length < 3) {
+                        System.out.println("Invalid arguments, need a word then a number");
+                        break;
+                    }
+                    String word = commands[1];
+                    int n = 0;
+                    try {
+                        n = Integer.parseInt(commands[2]);
+                    } catch (Exception e) {
+                        System.out.println("The second argument needs to be a number.");
+                    }
+
+                    ArrayList<String> cons = new ArrayList<>();
+                    for (String s : io.get_concordance_list()) {
+                        try{
+                            Concordance c = io.loadConcordance(s);
+                            if (c.hasWordNTimes(word, n))
+                                cons.add(s);
+                        } catch (Exception e) { }
+                    }
+                    System.out.println(String.format("\n\tConcordances with \"%s\" appearing %d or more times.\n", word, n));
+                    for (String s : cons)
+                        System.out.println(s);
+                    System.out.println();
                     break;
                 case "loadconcordance":
                     String name = "";
@@ -332,6 +359,7 @@ public class Main {
                             }
                             case "exit": {
                                 line = "";
+                                System.out.println("Exiting query mode.");
                                 finished = true;
                                 break;
                             }
