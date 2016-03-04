@@ -50,9 +50,8 @@ public class Concordance implements Serializable {
     }
 
 
-    public HashMap<String, LineData> createFromFile(BufferedReader file) {
+    private HashMap<String, LineData> createFromFile(BufferedReader file, int lineNum) {
         HashMap<String, LineData> concordance = new HashMap<>();
-        int lineNum = 0;
         String line = "";
         try{
             while((line = file.readLine())!= null) {
@@ -87,15 +86,17 @@ public class Concordance implements Serializable {
     public boolean create(BufferedReader file) {
         boolean pastPreambles = false;
         String line = "";
+        int lineNum = 0;
         try{
             while((line = file.readLine()) != null) {
+                lineNum++;
                 if (!pastPreambles) {
                     if (line.startsWith("*** START")) {
                         pastPreambles = true;
                     }
                 }
                 else {
-                    createFromFile(file);
+                    createFromFile(file, lineNum);
                     break;
                 }
             }
@@ -269,10 +270,11 @@ public class Concordance implements Serializable {
     }
 
 
-    /*
-        Finds and returns a list of words within the distance in lines of the target word.
+    /**
+     * query
+     * Finds and returns a list of words within the distance in lines of the target word.
      */
-    public ArrayList<String> wordsDistanceInLines(String target, int lineDistance) {
+    public ArrayList<String> wordsDistanceInLines(String target, int lineDistance, ArrayList<String> toIgnore) {
         LineData targetData = concordanceData.get(target);
         ArrayList<String> words = new ArrayList<>();
 
@@ -295,11 +297,12 @@ public class Concordance implements Serializable {
         return words;
     }
 
-    /*
-        Finds and returns a list of words within the distance in words of the target word
+    /**
+     * query
+     * Finds and returns a list of words within the distance in words of the target word
      */
 
-    public ArrayList<String> wordsDistanceInWords(String target, int wordDistance, BufferedReader file) {
+    public ArrayList<String> wordsDistanceInWords(String target, int wordDistance, BufferedReader file, ArrayList<String> toIgnore) {
         LineData targetData = concordanceData.get(target);
         ArrayList<String> words = new ArrayList<>();
         CircleQueue<String> wordsBefore = new CircleQueue<String>(wordDistance);
@@ -344,13 +347,14 @@ public class Concordance implements Serializable {
     }
 
     /**
+     * query
      * Finds the words around the phrase within the given distance in lines
      * @param phrase the phrase to look for
      * @param distance the distance in lines
      * @param file the file the book coressponds to
      * @return a list of unique words found within the range
      */
-    public ArrayList<String> findPhraseInLines(String phrase, int distance, BufferedReader file) {
+    public ArrayList<String> findPhraseInLines(String phrase, int distance, BufferedReader file, ArrayList<String> toIgnore) {
         ArrayList<String> words = new ArrayList<>();
 
         // holds the last "distance" lines.
@@ -407,7 +411,12 @@ public class Concordance implements Serializable {
         return words;
     }
 
-    public ArrayList<LineData> rankData() {
+    /**
+     * query
+     * Ranks the words. The index the word is found in the arraylist is the rank of the word.
+     * @return Sorted list of the words bases on it's count.
+     */
+    public ArrayList<LineData> rankData(ArrayList<String> toIgnore) {
         ArrayList<LineData> ranks = new ArrayList<>();
         for (String key : concordanceData.keySet()) {
             ranks.add(concordanceData.get(key));

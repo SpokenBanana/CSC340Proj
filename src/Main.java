@@ -106,7 +106,7 @@ public class Main {
                             BufferedReader fileChosen = new BufferedReader(new FileReader(file));
                             concordance.bookTitle = file.getName().substring(0, file.getName().indexOf(".txt"));
                             System.out.println("Creating concordance....");
-                            concordance.createFromFile(fileChosen);
+                            concordance.create(fileChosen);
                             io.save(concordance);
                             System.out.println("Concordance created.");
                             System.out.println(String.format("\nYou can now use the command \"loadconcordance %s\" to load the concordance " +
@@ -128,7 +128,7 @@ public class Main {
                             System.out.println("\nCreating concordance...");
                             if (!concordance.create(file)){
                                 file = new BufferedReader(new FileReader(io.get_book(book)));
-                                concordance.createFromFile(file);
+                                concordance.create(file);
                             }
 
                             io.save(concordance);
@@ -165,6 +165,7 @@ public class Main {
                     for (int i = 1; i < commands.length; i++)
                         name += commands[i];
                     Concordance c;
+
                     ArrayList<Concordance.LineData> ranks = new ArrayList<>();
                     System.out.println("loading...");
                     try{
@@ -177,8 +178,10 @@ public class Main {
                     }
                     String line = "";
                     System.out.println("\nConcordance loaded. You can now perform queries on this concordance\n");
-
                     Scanner query = new Scanner(System.in);
+
+                    ArrayList<String> toIgnore = new ArrayList<>();
+
                     boolean finished = false;
                      do {
                         System.out.print("What queries would you like to do? (-h for query commands) (ENTER to exit): ");
@@ -198,7 +201,9 @@ public class Main {
                                         "within <distance> words of <word>, <distance> being an integer.\n" +
                                         "rank <word> | returns the rank of the given word.\n" +
                                         "exit | exits out of query mode.\n" +
-                                        "h | displays the list of legal query commands");
+                                        "h | displays the list of legal query commands.\n" +
+                                        "ignore <words> | marks the words to be ignored in queries.\n" +
+                                        "de-ignore <words> | words specified will no longer be ignored.");
                                 break;
                             case "count": {
                                 if (c.concordanceData.containsKey(qs[1])) {
@@ -231,7 +236,7 @@ public class Main {
                                     System.out.println("The last parameter but be an integer value");
                                     break;
                                 }
-                                ArrayList<String> words = c.wordsDistanceInLines(qs[1], distance);
+                                ArrayList<String> words = c.wordsDistanceInLines(qs[1], distance, toIgnore);
                                 System.out.println(String.format("Words within %d distance of %s", distance, qs[1]));
 								for (String s : words) System.out.println(s);
                                 break;
@@ -249,7 +254,7 @@ public class Main {
                                     break;
                                 }
                                 BufferedReader bookScanner = new BufferedReader(new FileReader(io.get_book(c.bookTitle)));
-                                ArrayList<String> words = c.wordsDistanceInWords(qs[1], distance, bookScanner);
+                                ArrayList<String> words = c.wordsDistanceInWords(qs[1], distance, bookScanner, toIgnore);
                                 System.out.println(String.format("Words within %d distance in words of %s:", distance, qs[1]));
 								for (String s : words) System.out.println(s);
                                 break;
@@ -271,7 +276,7 @@ public class Main {
                                     break;
                                 }
                                 BufferedReader bookScanner = new BufferedReader(new FileReader(io.get_book(c.bookTitle)));
-                                ArrayList<String> words = c.findPhraseInLines(phrase, distance, bookScanner);
+                                ArrayList<String> words = c.findPhraseInLines(phrase, distance, bookScanner, toIgnore);
                                 System.out.println(String.format("Words within %d distance in lines of \"%s\"", distance, phrase));
 								for (String s : words) System.out.println(s);
                                 break;
@@ -282,7 +287,7 @@ public class Main {
                                 }
                                 // don't load in ranks until we need to.
                                 if (ranks.isEmpty()) {
-                                    ranks = c.rankData();
+                                    ranks = c.rankData(toIgnore);
                                 }
 
                                 int i;
@@ -298,6 +303,32 @@ public class Main {
                                     System.out.println("Word not found in the text.");
                                 }
                                 break;
+                            }
+                            case "ignore": {
+                                if (qs.length < 2) {
+                                    System.out.println("Please enter in words that you would want to exclude from queries, separated by spaces.");
+                                    break;
+                                }
+                                for (int i = 1; i < qs.length; i++){
+                                    System.out.println(String.format("%s will be ignore in future queries.", qs[i]));
+                                    toIgnore.add(qs[i]);
+                                }
+                                break;
+                            }
+                            case "de-ignore": {
+                                if (qs.length < 2) {
+                                    System.out.println("Please enter in words that you previously marked as ignored separated by spaces.");
+                                    break;
+                                }
+                                for (int i = 0; i < qs.length; i++){
+                                    if (toIgnore.contains(qs[i])) {
+                                        System.out.println(String.format("%s will no longer be ignored in future queries.", qs[i]));
+                                        toIgnore.remove(qs[i]);
+                                    }
+                                    else{
+                                        System.out.println(String.format("%s was not found in the list of words to ignore.", qs[i]));
+                                    }
+                                }
                             }
                             case "exit": {
                                 line = "";
